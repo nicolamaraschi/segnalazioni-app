@@ -1,0 +1,109 @@
+
+const express = require('express');
+const Report = require('../models/Report');
+
+const router = express.Router();
+
+
+// middlewares/adminMiddleware.js
+const adminMiddleware = (req, res, next) => {
+  if (!req.session.user || req.session.user.role !== 'admin') {
+    return res.status(403).send({ message: 'Access denied' });
+  }
+  next();
+};
+
+
+// Route per inviare una segnalazione
+router.post('/', async (req, res) => {
+  const { title, description } = req.body;
+  if (!title || !description) {
+    return res.status(400).send({ message: 'Title and description are required' });
+  }
+
+  try {
+    const report = new Report({
+      title,
+      description,
+      image: req.file ? req.file.path : null
+    });
+
+    await report.save();
+    res.status(201).send(report);
+  } catch (error) {
+    console.error('Error creating report:', error);
+    res.status(500).send({ message: 'Failed to create report', error });
+  }
+});
+
+
+
+// Route per ottenere tutte le segnalazioni
+router.get('/', async (req, res) => {
+  try {
+    const reports = await Report.find();
+    res.send(reports);
+  } catch (error) {
+    console.error('Error fetching reports:', error);
+    res.status(500).send({ message: 'Failed to fetch reports', error });
+  }
+});
+
+/*
+// Route per ottenere tutte le segnalazioni (solo per admin)
+router.get('/', adminMiddleware, async (req, res) => {
+  try {
+    const reports = await Report.find();
+    res.send(reports);
+  } catch (error) {
+    console.error('Error fetching reports:', error);
+    res.status(500).send({ message: 'Failed to fetch reports', error });
+  }
+});
+*/
+
+// Route per aggiornare lo stato di una segnalazione (solo per admin)
+router.patch('/:id', adminMiddleware, async (req, res) => {
+  const { status } = req.body;
+  if (!status) {
+    return res.status(400).send({ message: 'Status is required' });
+  }
+
+  try {
+    const report = await Report.findByIdAndUpdate(req.params.id, { status }, { new: true });
+    if (!report) {
+      return res.status(404).send({ message: 'Report not found' });
+    }
+
+    res.send(report);
+  } catch (error) {
+    console.error('Error updating report:', error);
+    res.status(500).send({ message: 'Failed to update report', error });
+  }
+});
+
+
+
+/*
+// Route per aggiornare lo stato di una segnalazione
+router.patch('/:id', async (req, res) => {
+  const { status } = req.body;
+  if (!status) {
+    return res.status(400).send({ message: 'Status is required' });
+  }
+
+  try {
+    const report = await Report.findByIdAndUpdate(req.params.id, { status }, { new: true });
+    if (!report) {
+      return res.status(404).send({ message: 'Report not found' });
+    }
+
+    res.send(report);
+  } catch (error) {
+    console.error('Error updating report:', error);
+    res.status(500).send({ message: 'Failed to update report', error });
+  }
+});
+*/
+
+module.exports = router;
