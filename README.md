@@ -56,29 +56,10 @@ Segnalazioni App è un'applicazione web che permette agli utenti di inviare segn
 - **`/models`**: Modelli Mongoose per MongoDB.
 - **`/public`**: Contiene i file statici (HTML, CSS, JS).
 
-- ```bash
-segnalazioni-app/
-│
-├── models/
-│   ├── User.js          # Modello Mongoose per gli utenti
-│   ├── Report.js        # Modello Mongoose per le segnalazioni
-│
-├── routes/
-│   ├── auth.js          # Rotte per l'autenticazione
-│   ├── reports.js       # Rotte per la gestione delle segnalazioni
-│
-├── public/
-│   ├── index.html       # Pagina principale
-│   ├── admin.html       # Pagina per gli amministratori
-│   ├── js/
-│       ├── main.js      # Logica lato client
-│
-├── .env                 # Variabili d'ambiente
-├── server.js            # Configurazione del server Express
-├── README.md            # Documentazione del progetto
-└── package.json         # Dipendenze del progetto
 
+Ecco la sezione delle API nel formato `README.md`:
 
+```markdown
 ## API Endpoints
 
 ### Autenticazione
@@ -92,4 +73,92 @@ Registra un nuovo utente.
   "username": "esempio",
   "password": "password123"
 }
+```
+
+**Risposta:**
+- `201 Created`: Se la registrazione ha successo.
+- `400 Bad Request`: Se mancano username o password.
+- `500 Internal Server Error`: In caso di errore del server.
+
+#### `POST /api/auth/login`
+Effettua il login di un utente.
+
+**Richiesta:**
+```json
+{
+  "username": "esempio",
+  "password": "password123"
+}
+```
+
+**Risposta:**
+- `200 OK`: Se il login ha successo.
+- `401 Unauthorized`: Se le credenziali sono errate.
+- `500 Internal Server Error`: In caso di errore del server.
+
+#### `POST /api/auth/logout`
+Effettua il logout dell'utente.
+
+**Risposta:**
+- `200 OK`: Se il logout ha successo.
+
+#### `GET /api/auth/status`
+Verifica lo stato di autenticazione dell'utente.
+
+**Risposta:**
+- `200 OK`: Con lo stato di autenticazione e ruolo dell'utente (`loggedIn: true/false`, `isAdmin: true/false`).
+
+### Segnalazioni
+
+#### `POST /api/reports`
+Crea una nuova segnalazione.
+
+**Richiesta:**
+```json
+{
+  "title": "Titolo della segnalazione",
+  "description": "Descrizione della segnalazione",
+  "image": "path/alla/immagine" // opzionale
+}
+```
+
+**Risposta:**
+- `201 Created`: Se la segnalazione è stata creata con successo.
+- `400 Bad Request`: Se mancano titolo o descrizione.
+- `500 Internal Server Error`: In caso di errore del server.
+
+#### `GET /api/reports`
+Ottiene tutte le segnalazioni (visibile a tutti gli utenti).
+
+**Risposta:**
+- `200 OK`: Restituisce un array di tutte le segnalazioni.
+- `500 Internal Server Error`: In caso di errore nel recupero delle segnalazioni.
+
+#### `GET /api/reports/pending`
+Ottiene solo le segnalazioni con stato `pending` (solo per amministratori).
+
+**Risposta:**
+- `200 OK`: Restituisce un array di segnalazioni con stato `pending`.
+- `403 Forbidden`: Se l'utente non è un amministratore.
+- `500 Internal Server Error`: In caso di errore nel recupero delle segnalazioni.
+
+#### `PATCH /api/reports/:id`
+Aggiorna lo stato di una segnalazione (solo per amministratori).
+
+**Richiesta:**
+```json
+{
+  "status": "accepted" // o "rejected" o "pending"
+}
+```
+
+**Risposta:**
+- `200 OK`: Se lo stato della segnalazione è stato aggiornato con successo.
+- `400 Bad Request`: Se lo stato fornito non è valido o mancante.
+- `404 Not Found`: Se la segnalazione con l'ID specificato non è stata trovata.
+- `403 Forbidden`: Se l'utente non è un amministratore.
+- `500 Internal Server Error`: In caso di errore nel processo di aggiornamento.
+```
+
+Puoi copiare e incollare questo codice nel tuo file `README.md`.
 
